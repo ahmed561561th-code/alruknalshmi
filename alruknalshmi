@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مطعم الركن الشامي - المنيو والطلبات</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <style>
+    body, input, select, button, textarea, h1, h2, h3, h4, p, span, div {
+      font-family: 'Tajawal', sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-stone-100 pb-32 text-stone-800 min-h-screen select-none" onclick="requestNotificationPermission()">
+
+  <!-- إشعار إضافة صنف أو تنبيه عام -->
+  <div id="toast-notification" class="fixed top-20 left-1/2 -translate-x-1/2 bg-stone-900/95 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl z-50 flex items-center gap-2 transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 border border-amber-500/30">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+    <span id="toast-message">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- بنر إشعار تغيير حالة الطلب اللحظي -->
+  <div id="status-change-banner" class="fixed top-3 left-3 right-3 max-w-md mx-auto bg-stone-900 text-white p-3.5 rounded-2xl shadow-2xl z-50 transition-all duration-500 translate-y-[-150%] opacity-0 border-2 border-amber-500 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg shrink-0 border border-amber-500/40">
+        <i class="fa-solid fa-bell animate-bounce"></i>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-amber-400" id="status-banner-title">تحديث حالة الطلب!</h4>
+        <p class="text-[11px] text-stone-200 mt-0.5" id="status-banner-msg">تغيرت حالة طلبك</p>
+      </div>
+    </div>
+    <button onclick="closeStatusBanner()" class="text-stone-400 hover:text-white text-sm px-2">✕</button>
+  </div>
+
+  <!-- الهيدر الرئيسي -->
+  <header class="bg-stone-900 text-white p-4 shadow-lg sticky top-0 z-20 border-b-2 border-amber-500 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgYDIEqcDEQOb7vPbahxCYf7xbY8dt4Mg8RM3JZM7gWnEnghUm7HR6JPOy2wJSkl_pxcAsnPCbuqtDiPCxg-Kx9N0J5n3yckarG-1BtFKjT4O65lGwZ3a2wjQIUssdT9XpCrc0DNpYF3hpp2snQDdfFOUBK3olE7M7QNNAy8DHcXMKj3t8D6veY9Mj576oA/s320/WhatsApp%20Image%202025-06-11%20at%204.34.21%20PM.jpeg" 
+           alt="لوجو المطعم" class="w-12 h-12 rounded-full border-2 border-amber-500 object-cover bg-white p-0.5 shadow">
+      <div>
+        <h1 class="text-lg font-bold text-amber-400 leading-tight">مطعم الركن الشامي</h1>
+        <div class="flex items-center gap-2 mt-0.5">
+          <p class="text-[11px] text-stone-300">أصالة المذاق الشامي</p>
+          <span id="store-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-800 text-stone-300 border border-stone-700 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> جاري التحقق...
+          </span>
+        </div>
+      </div>
+    </div>
+    <button id="nav-track-btn" onclick="showTrackingView()" class="bg-stone-800 border border-amber-500/50 text-amber-400 text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 hover:bg-stone-700 transition">
+      <i class="fa-solid fa-clock-rotate-left"></i> طلباتي
+    </button>
+  </header>
+
+  <!-- تنبيه عند إغلاق المطعم -->
+  <div id="closed-banner" class="hidden bg-red-600 text-white text-center py-2.5 px-4 text-xs font-bold shadow-inner sticky top-[73px] z-10 flex items-center justify-center gap-2">
+    <i class="fa-solid fa-store-slash text-sm"></i>
+    <span>عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة.</span>
+  </div>
+
+  <!-- واجهة المنيو -->
+  <div id="menu-view" class="p-4 max-w-md mx-auto">
+    <!-- شريط البحث -->
+    <div class="mb-3 relative">
+      <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="ابحث عن أكلة أو وجبة..." class="w-full bg-white border border-stone-200 rounded-xl py-2.5 px-9 text-xs focus:outline-none focus:border-amber-600 shadow-sm transition">
+      <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-stone-400 text-xs"></i>
+      <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute left-3 top-2.5 text-stone-400 hover:text-stone-600 text-xs font-bold bg-stone-100 rounded-full w-5 h-5 flex items-center justify-center">✕</button>
+    </div>
+
+    <div id="category-tabs" class="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar"></div>
+    <div id="menu-items-container" class="space-y-4"></div>
+  </div>
+
+  <!-- زر واتساب الرئيسي -->
+  <a href="https://wa.me/201000000000" target="_blank" rel="noopener noreferrer" class="fixed bottom-28 left-4 bg-emerald-600 hover:bg-emerald-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl z-30 text-2xl transition border-2 border-white">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+  <!-- شريط السلة السفلي -->
+  <div id="cart-bar" class="fixed bottom-[56px] left-0 right-0 bg-white border-t border-stone-200 p-3 shadow-2xl flex justify-between items-center max-w-md mx-auto z-20">
+    <div>
+      <span id="cart-count" class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-bold block w-fit mb-0.5">0 أطباق</span>
+      <span id="total-price" class="text-lg font-black text-amber-700">0 ج.م</span>
+    </div>
+    <button id="checkout-btn" onclick="openCheckoutModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+      متابعة الشراء <i class="fa-solid fa-arrow-left text-xs"></i>
+    </button>
+  </div>
+
+  <!-- شريط التنقل السفلي -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-amber-500/40 text-stone-400 max-w-md mx-auto z-30 flex justify-around items-center h-14 px-2 shadow-2xl">
+    <button onclick="showMenuView()" id="nav-btn-menu" class="flex flex-col items-center justify-center w-full h-full text-amber-400 font-bold transition">
+      <i class="fa-solid fa-utensils text-base mb-0.5"></i>
+      <span class="text-[10px]">المنيو</span>
+    </button>
+    <button onclick="openCheckoutModal()" id="nav-btn-cart" class="flex flex-col items-center justify-center w-full h-full transition hover:text-stone-200 relative">
+      <i class="fa-solid fa-basket-shopping text-base mb-0.5"></i>
+      <span class="text-[10px]">السلة</span>
+      <span id="nav-cart-badge" class="hidden absolute top-1 right-1/4 bg-amber-500 text-stone-900 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">0</span>
+    </button>
+    <button onclick="showTrackingView()" id="nav-btn-tracking" class="flex flex-col items-center justify-center w-full h-full transition hover:text-stone-200 relative">
+      <i class="fa-solid fa-truck-fast text-base mb-0.5"></i>
+      <span class="text-[10px]">متابعة الطلب</span>
+      <span id="nav-tracking-dot" class="hidden absolute top-2.5 right-1/3 w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+    </button>
+  </nav>
+
+  <!-- مودال إتمام الطلب -->
+  <div id="checkout-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h2 class="text-lg font-bold text-stone-900">تسجيل بيانات الطلب</h2>
+        <button onclick="closeCheckoutModal()" class="text-stone-400 hover:text-stone-700 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <label class="block text-xs font-bold text-stone-700 mb-2">اختر نوع الطلب:</label>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button type="button" id="btn-delivery" onclick="setOrderType('delivery')" class="py-2.5 rounded-xl border-2 border-amber-600 bg-amber-50 text-amber-800 font-bold text-xs flex flex-col items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-motorcycle text-base"></i> دليفري
+        </button>
+        <button type="button" id="btn-dinein" onclick="setOrderType('dinein')" class="py-2.5 rounded-xl border border-stone-200 text-stone-600 font-bold text-xs flex flex-col items-center gap-1">
+          <i class="fa-solid fa-utensils text-base"></i> صالة
+        </button>
+        <button type="button" id="btn-takeaway" onclick="setOrderType('takeaway')" class="py-2.5 rounded-xl border border-stone-200 text-stone-600 font-bold text-xs flex flex-col items-center gap-1">
+          <i class="fa-solid fa-bag-shopping text-base"></i> سفري
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="block text-xs font-bold text-stone-700">الأصناف المحددة:</label>
+          <button type="button" onclick="clearCart()" class="text-[11px] text-red-600 font-bold hover:underline">مسح الكل</button>
+        </div>
+        <div id="cart-summary-items" class="max-h-48 overflow-y-auto space-y-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200"></div>
+      </div>
+
+      <form id="order-form" onsubmit="confirmOrder(event)" class="space-y-3">
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-bold text-stone-700">رقم الهاتف الأساسي *</label>
+            <span id="phone-autofill-badge" class="hidden text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-200">
+              <i class="fa-solid fa-check-double"></i> تم التعرف على بياناتك
+            </span>
+          </div>
+          <div class="relative">
+            <input type="tel" id="cust-phone" required oninput="handlePhoneInput(this.value)" placeholder="01xxxxxxxxx" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600 pl-8">
+            <span id="phone-loading-spinner" class="hidden absolute left-3 top-3 text-amber-600 text-xs"><i class="fa-solid fa-circle-notch animate-spin"></i></span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">رقم هاتف إضافي (اختياري)</label>
+          <input type="tel" id="cust-second-phone" placeholder="رقم بديل للاتصال عند الحاجة" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">الاسم بالكامل *</label>
+          <input type="text" id="cust-name" required placeholder="أدخل اسمك الكريم" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+        </div>
+
+        <div id="table-field" class="hidden">
+          <label class="block text-xs font-bold text-stone-700 mb-1">رقم الطاولة *</label>
+          <input type="text" id="cust-table" placeholder="مثال: 5" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+        </div>
+
+        <div id="delivery-fields" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">اختر المنطقة *</label>
+            <select id="cust-zone" onchange="updateModalPrices()" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600 bg-white font-medium text-stone-800">
+              <option value="15">المنطقة المجاورة للمطعم - (15 ج.م)</option>
+              <option value="25">وسط المدينة والأحياء القريبة - (25 ج.م)</option>
+              <option value="35">الأحياء البعيدة والأطراف - (35 ج.م)</option>
+              <option value="50">التوصيل الخارجي / المناطق المجاورة - (50 ج.م)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">العنوان التفصيلي (الشارع / العمارة) *</label>
+            <input type="text" id="cust-address" placeholder="اسم الشارع ورقم العمارة" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">علامة مميزة (اختياري)</label>
+            <input type="text" id="cust-landmark" placeholder="مثال: بجوار صيدلية النور، خلف المسجد..." class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">الدور</label>
+              <input type="text" id="cust-floor" placeholder="مثال: الثالث" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">رقم الشقة</label>
+              <input type="text" id="cust-apt" placeholder="مثال: 12" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 my-2">
+          <div class="flex justify-between text-xs text-stone-600 mb-1">
+            <span>مجموع الأطباق:</span>
+            <span id="modal-subtotal">0 ج.م</span>
+          </div>
+          <div id="delivery-fee-row" class="flex justify-between text-xs text-stone-600 mb-1">
+            <span>رسوم التوصيل:</span>
+            <span id="modal-delivery-fee" class="text-emerald-700 font-bold">15 ج.م</span>
+          </div>
+          <div class="flex justify-between text-sm font-black text-stone-900 border-t pt-2 mt-1">
+            <span>الإجمالي النهائي:</span>
+            <span id="modal-total" class="text-amber-700">0 ج.م</span>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-order-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+          تأكيد وإرسال الطلب الآن 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال تأكيد إعادة نفس الطلب -->
+  <div id="reorder-confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl text-center space-y-4 animate-pulse-subtle">
+      <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+        <i class="fa-solid fa-rotate-right"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-stone-900 text-base">تأكيد إعادة الطلب</h3>
+        <p class="text-xs text-stone-500 mt-1">هل أنت متأكد من رغبتك في إعادة نفس أصناف هذا الطلب وإضافتها لسلتك الحالية؟</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="closeReorderModal()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2.5 rounded-xl text-xs transition">تراجع</button>
+        <button id="confirm-reorder-btn" onclick="executeReorder()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">نعم، أعد الطلب</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- واجهة تتبع الطلبات -->
+  <div id="tracking-view" class="p-4 max-w-md mx-auto hidden">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-black text-stone-900 flex items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-amber-600"></i> متابعة الطلبات المباشرة
+      </h2>
+      <button onclick="showMenuView()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow flex items-center gap-1.5">
+        <i class="fa-solid fa-utensils"></i> المنيو
+      </button>
+    </div>
+    <div id="orders-history-container" class="space-y-4"></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7b09veLZicac60Uuw0Sgb-cL3FtC4",
+      authDomain: "alrokn-alshami.firebaseapp.com",
+      projectId: "alrokn-alshami",
+      storageBucket: "alrokn-alshami.appspot.com",
+      messagingSenderId: "637299277948",
+      appId: "1:637299277948:web:b2d029a2e72b41b4b889f9",
+      measurementId: "G-38M27LBT11"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let cart = [];
+    let currentCategory = 0;
+    let orderType = 'delivery';
+    let isRestaurantOpen = true;
+    let searchQuery = '';
+    let phoneLookupTimeout = null;
+    let previousOrderStatuses = {};
+    let isFirstStatusLoad = true;
+    let pendingReorderData = null;
+
+    const restaurantWhatsAppNumber = "201000000000";
+
+    const menuData = [
+      {
+        category: "عروض الركن الشامي",
+        items: [
+          { name: "عرض الطلبة", price: 35, desc: "عرض الطلبة الاقتصادي", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
+          { name: "عرض 3 شاورما وسط", price: 135, desc: "عرض 3 سندوتشات شاورما وسط", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
+          { name: "عرض 3 شاورما لارج", price: 165, desc: "عرض 3 سندوتشات شاورما لارج", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" }
+        ]
+      },
+      {
+        category: "الشاورما",
+        items: [
+          { name: "سندوتش شاورما وسط", price: 50, desc: "سندوتش شاورما وسط بخبز الصاج", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
+          { name: "سندوتش شاورما كبير", price: 60, desc: "سندوتش شاورما كبير مميز", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
+          { name: "وجبة شاورما عربي", price: 80, desc: "وجبة شاورما عربي مقطعة مع الثومية والبطاطس", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" }
+        ]
+      },
+      {
+        category: "الغربي",
+        items: [
+          { name: "سندوتش كرسبي سوري", price: 70, desc: "سندوتش دجاج كرسبي بخلطة الركن الشامي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500" },
+          { name: "سندوتش زنجر سوري", price: 70, desc: "سندوتش زنجر حار مقرمش", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500" }
+        ]
+      },
+      {
+        category: "البطاطس",
+        items: [
+          { name: "سندوتش بطاطس سوري", price: 17, desc: "بطاطس محمرة مع الثومية بخبز الصاج", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" }
+        ]
+      },
+      {
+        category: "مقبلات باردة",
+        items: [
+          { name: "تومية عادي", price: 15, desc: "علبة تومية سورية أصلية", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
+          { name: "تومية سبايسي", price: 15, desc: "علبة تومية حارة", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" }
+        ]
+      }
+    ];
+
+    window.onload = function() {
+      initStoreStatusListener();
+      renderCategories();
+      renderMenuItems(0);
+      updateCartUI();
+      loadUserSavedOrders();
+      loadSavedCustomerDataLocally();
+    };
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast-notification');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      if (!toast || !toastMsg) return;
+      
+      toastMsg.innerText = message;
+      if (isError) {
+        toastIcon.className = "fa-solid fa-circle-exclamation text-red-400 text-sm";
+      } else {
+        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
+      }
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    function playNotificationSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {
+        console.log("Audio deferred");
+      }
+    }
+
+    function triggerOrderStatusNotification(orderId, newStatus) {
+      playNotificationSound();
+      const banner = document.getElementById('status-change-banner');
+      const msg = document.getElementById('status-banner-msg');
+      if (banner && msg) {
+        msg.innerText = `الطلب (${orderId}) أصبحت حالته الآن: [ ${newStatus} ]`;
+        banner.classList.remove('translate-y-[-150%]', 'opacity-0');
+        banner.classList.add('translate-y-0', 'opacity-100');
+        
+        clearTimeout(window.statusBannerTimer);
+        window.statusBannerTimer = setTimeout(() => {
+          closeStatusBanner();
+        }, 6000);
+      }
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("مطعم الركن الشامي 🥙", {
+          body: `تحديث الطلب #${orderId}: حالته الآن (${newStatus})`,
+          icon: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgYDIEqcDEQOb7vPbahxCYf7xbY8dt4Mg8RM3JZM7gWnEnghUm7HR6JPOy2wJSkl_pxcAsnPCbuqtDiPCxg-Kx9N0J5n3yckarG-1BtFKjT4O65lGwZ3a2wjQIUssdT9XpCrc0DNpYF3hpp2snQDdfFOUBK3olE7M7QNNAy8DHcXMKj3t8D6veY9Mj576oA/s320/WhatsApp%20Image%202025-06-11%20at%204.34.21%20PM.jpeg"
+        });
+      }
+    }
+
+    function closeStatusBanner() {
+      const banner = document.getElementById('status-change-banner');
+      if (banner) {
+        banner.classList.add('translate-y-[-150%]', 'opacity-0');
+        banner.classList.remove('translate-y-0', 'opacity-100');
+      }
+    }
+
+    function requestNotificationPermission() {
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+
+    function initStoreStatusListener() {
+      db.ref('storeStatus').on('value', (snapshot) => {
+        const status = snapshot.val();
+        isRestaurantOpen = !(status === false || status === 'closed' || status === 'مغلق' || (status && status.isOpen === false));
+        updateStoreStatusUI();
+      });
+    }
+
+    function updateStoreStatusUI() {
+      const badge = document.getElementById('store-status-badge');
+      const closedBanner = document.getElementById('closed-banner');
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const submitOrderBtn = document.getElementById('submit-order-btn');
+
+      if (isRestaurantOpen) {
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-500/50 flex items-center gap-1";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> مفتوح الآن`;
+        closedBanner.classList.add('hidden');
+        if (checkoutBtn) checkoutBtn.disabled = false;
+        if (submitOrderBtn) submitOrderBtn.disabled = false;
+      } else {
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-900/80 text-red-300 border border-red-500/50 flex items-center gap-1";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> مغلق حالياً`;
+        closedBanner.classList.remove('hidden');
+        if (checkoutBtn) checkoutBtn.disabled = true;
+        if (submitOrderBtn) submitOrderBtn.disabled = true;
+      }
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('category-tabs');
+      container.innerHTML = menuData.map((cat, index) => `
+        <button onclick="switchCategory(${index})" class="category-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${index === currentCategory ? 'bg-amber-600 text-white shadow' : 'bg-white text-stone-600 border border-stone-200'}">
+          ${cat.category}
+        </button>
+      `).join('');
+    }
+
+    function switchCategory(index) {
+      currentCategory = index;
+      renderCategories();
+      renderMenuItems(index);
+    }
+
+    function renderMenuItems(catIndex) {
+      const container = document.getElementById('menu-items-container');
+      let itemsToDisplay = [];
+
+      if (searchQuery) {
+        menuData.forEach(cat => {
+          cat.items.forEach(item => {
+            if (item.name.toLowerCase().includes(searchQuery) || item.desc.toLowerCase().includes(searchQuery)) {
+              itemsToDisplay.push(item);
+            }
+          });
+        });
+      } else {
+        itemsToDisplay = menuData[catIndex].items;
+      }
+
+      if (itemsToDisplay.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-stone-400 text-xs">عذراً، لا توجد أصناف مطابقة للبحث</div>`;
+        return;
+      }
+
+      container.innerHTML = itemsToDisplay.map(item => {
+        const cartItem = cart.find(i => i.name === item.name);
+        const qty = cartItem ? cartItem.qty : 0;
+
+        return `
+          <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col">
+            <img src="${item.img}" alt="${item.name}" class="w-full h-40 object-cover">
+            <div class="p-4 flex flex-col gap-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-stone-900 text-sm">${item.name}</h3>
+                  <p class="text-stone-500 text-[11px] mt-0.5">${item.desc}</p>
+                </div>
+                <span class="font-black text-amber-700 text-sm shrink-0">${item.price} ج.م</span>
+              </div>
+              <div class="mt-2">
+                ${qty > 0 ? `
+                  <div class="bg-amber-50 border border-amber-300 rounded-xl p-2 flex justify-between items-center">
+                    <span class="text-xs font-bold text-stone-800">في السلة: ${qty}</span>
+                    <div class="flex items-center gap-2">
+                      <button onclick="updateCartQtyByName('${item.name}', -1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">-</button>
+                      <button onclick="updateCartQtyByName('${item.name}', 1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">+</button>
+                    </div>
+                  </div>
+                ` : `
+                  <button onclick="addToCart('${item.name}', ${item.price})" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2.5 rounded-xl transition shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-plus text-xs"></i> إضافة للسلة
+                  </button>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      document.getElementById('clear-search-btn').classList.toggle('hidden', !searchQuery);
+      renderMenuItems(currentCategory);
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      searchQuery = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      renderMenuItems(currentCategory);
+    }
+
+    function addToCart(name, price, qty = 1, notes = '') {
+      const existing = cart.find(i => i.name === name);
+      if (existing) {
+        existing.qty += qty;
+        if (notes) existing.notes = notes;
+      } else {
+        cart.push({ name, price, qty, notes });
+      }
+      updateCartUI();
+      renderMenuItems(currentCategory);
+    }
+
+    function updateCartQtyByName(name, delta) {
+      const existing = cart.find(i => i.name === name);
+      if (existing) {
+        existing.qty += delta;
+        if (existing.qty <= 0) {
+          cart = cart.filter(i => i.name !== name);
+        }
+      }
+      updateCartUI();
+      renderMenuItems(currentCategory);
+      renderCheckoutSummary();
+    }
+
+    function updateCartQty(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) cart.splice(index, 1);
+      updateCartUI();
+      renderMenuItems(currentCategory);
+      renderCheckoutSummary();
+    }
+
+    function updateItemNote(index, val) {
+      cart[index].notes = val;
+    }
+
+    function updateCartUI() {
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      
+      document.getElementById('cart-count').innerText = `${totalQty} أطباق`;
+      document.getElementById('total-price').innerText = `${subtotal} ج.م`;
+      
+      const badge = document.getElementById('nav-cart-badge');
+      if (totalQty > 0) {
+        badge.innerText = totalQty;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function openCheckoutModal() {
+      if (cart.length === 0) {
+        showToast("السلة فارغة، أضف بعض الأطباق أولاً!", true);
+        return;
+      }
+      document.getElementById('checkout-modal').classList.remove('hidden');
+      renderCheckoutSummary();
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    function setOrderType(type) {
+      orderType = type;
+      ['delivery', 'dinein', 'takeaway'].forEach(t => {
+        const btn = document.getElementById(`btn-${t}`);
+        if (t === type) {
+          btn.className = "py-2.5 rounded-xl border-2 border-amber-600 bg-amber-50 text-amber-800 font-bold text-xs flex flex-col items-center gap-1 shadow-sm";
+        } else {
+          btn.className = "py-2.5 rounded-xl border border-stone-200 text-stone-600 font-bold text-xs flex flex-col items-center gap-1";
+        }
+      });
+
+      document.getElementById('delivery-fields').style.display = (type === 'delivery') ? 'block' : 'none';
+      document.getElementById('table-field').style.display = (type === 'dinein') ? 'block' : 'none';
+      document.getElementById('delivery-fee-row').style.display = (type === 'delivery') ? 'flex' : 'none';
+      renderCheckoutSummary();
+    }
+
+    function renderCheckoutSummary() {
+      const container = document.getElementById('cart-summary-items');
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const deliveryFee = (orderType === 'delivery') ? parseInt(document.getElementById('cust-zone').value) || 15 : 0;
+      const total = subtotal + deliveryFee;
+
+      container.innerHTML = cart.map((item, idx) => `
+        <div class="bg-white p-2.5 rounded-xl border border-stone-200 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-stone-900">${item.name}</span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 bg-stone-100 rounded text-stone-700 font-bold">-</button>
+              <span class="font-black text-amber-700">${item.qty}</span>
+              <button type="button" onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 bg-stone-100 rounded text-stone-700 font-bold">+</button>
+              <span class="font-bold text-stone-800">${item.price * item.qty} ج.م</span>
+            </div>
+          </div>
+          <input type="text" placeholder="ملاحظة على الصنف (مثال: بدون ثومية)" value="${item.notes || ''}" oninput="updateItemNote(${idx}, this.value)" class="w-full bg-stone-50 border border-stone-200 rounded p-1 text-[11px] text-stone-700">
+        </div>
+      `).join('');
+
+      document.getElementById('modal-subtotal').innerText = `${subtotal} ج.م`;
+      document.getElementById('modal-delivery-fee').innerText = `${deliveryFee} ج.م`;
+      document.getElementById('modal-total').innerText = `${total} ج.م`;
+    }
+
+    function updateModalPrices() {
+      renderCheckoutSummary();
+    }
+
+    function clearCart() {
+      cart = [];
+      updateCartUI();
+      renderMenuItems(currentCategory);
+      closeCheckoutModal();
+      showToast("تم إفراغ السلة بنجاح");
+    }
+
+    function loadSavedCustomerDataLocally() {
+      const savedCustomer = JSON.parse(localStorage.getItem('shami_customer_data') || '{}');
+      if (savedCustomer.phone) {
+        document.getElementById('cust-phone').value = savedCustomer.phone;
+        if (savedCustomer.secondPhone) document.getElementById('cust-second-phone').value = savedCustomer.secondPhone;
+        if (savedCustomer.name) document.getElementById('cust-name').value = savedCustomer.name;
+        if (savedCustomer.address) document.getElementById('cust-address').value = savedCustomer.address;
+        if (savedCustomer.landmark) document.getElementById('cust-landmark').value = savedCustomer.landmark;
+        if (savedCustomer.floor) document.getElementById('cust-floor').value = savedCustomer.floor;
+        if (savedCustomer.apt) document.getElementById('cust-apt').value = savedCustomer.apt;
+        const badge = document.getElementById('phone-autofill-badge');
+        if (badge) badge.classList.remove('hidden');
+      }
+    }
+
+    function handlePhoneInput(val) {
+      const cleanPhone = val.replace(/\D/g, '');
+      const badge = document.getElementById('phone-autofill-badge');
+      const spinner = document.getElementById('phone-loading-spinner');
+      
+      badge.classList.add('hidden');
+      clearTimeout(phoneLookupTimeout);
+
+      if (cleanPhone.length >= 10) {
+        spinner.classList.remove('hidden');
+        phoneLookupTimeout = setTimeout(() => {
+          db.ref('customers/' + cleanPhone).once('value').then(snap => {
+            spinner.classList.add('hidden');
+            const data = snap.val();
+            if (data) {
+              if (data.name) document.getElementById('cust-name').value = data.name;
+              if (data.secondPhone) document.getElementById('cust-second-phone').value = data.secondPhone;
+              if (data.address) document.getElementById('cust-address').value = data.address;
+              if (data.landmark) document.getElementById('cust-landmark').value = data.landmark;
+              if (data.floor) document.getElementById('cust-floor').value = data.floor;
+              if (data.apt) document.getElementById('cust-apt').value = data.apt;
+              badge.classList.remove('hidden');
+              showToast("تم جلب بياناتك المحفوظة تلقائياً ✨");
+            }
+          }).catch(() => spinner.classList.add('hidden'));
+        }, 500);
+      }
+    }
+
+    function confirmOrder(e) {
+      e.preventDefault();
+      if (!isRestaurantOpen) {
+        showToast("المطعم مغلق حالياً، لا يمكن إرسال طلبات جديدة", true);
+        return;
+      }
+
+      const name = document.getElementById('cust-name').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const secondPhone = document.getElementById('cust-second-phone').value.trim();
+      const address = (orderType === 'delivery') ? document.getElementById('cust-address').value.trim() : '';
+      const landmark = (orderType === 'delivery') ? document.getElementById('cust-landmark').value.trim() : '';
+      const table = (orderType === 'dinein') ? document.getElementById('cust-table').value.trim() : '';
+      const floor = document.getElementById('cust-floor').value.trim();
+      const apt = document.getElementById('cust-apt').value.trim();
+      const deliveryFee = (orderType === 'delivery') ? parseInt(document.getElementById('cust-zone').value) || 15 : 0;
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const total = subtotal + deliveryFee;
+
+      const orderId = "ORD-" + Math.floor(1000 + Math.random() * 9000);
+      const createdAt = new Date().toISOString();
+
+      const orderData = {
+        orderId,
+        orderType,
+        status: 'جديد',
+        createdAt,
+        date: createdAt.split('T')[0],
+        customer: { name, phone, secondPhone },
+        phone,
+        secondPhone,
+        address,
+        landmark,
+        tableNo: table,
+        floor,
+        apt,
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, notes: i.notes || '' })),
+        subtotal,
+        deliveryFee,
+        total
+      };
+
+      db.ref('orders/' + orderId).set(orderData, (err) => {
+        if (!err) {
+          db.ref('customers/' + phone).set({ name, secondPhone, address, landmark, floor, apt });
+          localStorage.setItem('shami_customer_data', JSON.stringify({ phone, secondPhone, name, address, landmark, floor, apt }));
+
+          let localOrders = JSON.parse(localStorage.getItem('shami_orders') || '[]');
+          localOrders = localOrders.filter(id => id !== orderId);
+          localOrders.unshift(orderId);
+          localStorage.setItem('shami_orders', JSON.stringify(localOrders));
+
+          showToast(`تم إرسال طلبك بنجاح! رقم الطلب: #${orderId} 🚀`);
+          cart = [];
+          updateCartUI();
+          renderMenuItems(currentCategory);
+          closeCheckoutModal();
+          showTrackingView();
+        } else {
+          showToast("حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى", true);
+        }
+      });
+    }
+
+    function showTrackingView() {
+      document.getElementById('menu-view').classList.add('hidden');
+      document.getElementById('tracking-view').classList.remove('hidden');
+      document.getElementById('nav-tracking-dot').classList.add('hidden');
+      loadUserSavedOrders();
+    }
+
+    function showMenuView() {
+      document.getElementById('tracking-view').classList.add('hidden');
+      document.getElementById('menu-view').classList.remove('hidden');
+    }
+
+    function sendOrderWhatsAppInquiry(orderId, orderTotal, orderStatus, itemsStr) {
+      const text = encodeURIComponent(`مرحباً مطعم الركن الشامي، أود الاستفسار عن تفاصيل الطلب:\n\n*رقم الطلب:* #${orderId}\n*الحالة الحالية:* ${orderStatus}\n*الأصناف:* ${itemsStr}\n*الإجمالي:* ${orderTotal} ج.م`);
+      window.open(`https://wa.me/${restaurantWhatsAppNumber}?text=${text}`, '_blank');
+    }
+
+    // دوال إعادة الطلب المؤكدة
+    function promptReorder(orderItemsJson) {
+      try {
+        pendingReorderData = JSON.parse(decodeURIComponent(orderItemsJson));
+        document.getElementById('reorder-confirm-modal').classList.remove('hidden');
+      } catch(e) {
+        showToast("حدث خطأ أثناء جلب تفاصيل الأصناف", true);
+      }
+    }
+
+    function closeReorderModal() {
+      document.getElementById('reorder-confirm-modal').classList.add('hidden');
+      pendingReorderData = null;
+    }
+
+    function executeReorder() {
+      if (!pendingReorderData || !Array.isArray(pendingReorderData)) return;
+      
+      // تفريغ السلة الحالية أو إدمان الأصناف إليها (هنا سنقوم بإضافتها للسلة)
+      pendingReorderData.forEach(item => {
+        addToCart(item.name, item.price, item.qty, item.notes || '');
+      });
+
+      closeReorderModal();
+      showToast("تمت إضافة أصناف الطلب السابق إلى السلة بنجاح! 🛒");
+      openCheckoutModal();
+    }
+
+    function loadUserSavedOrders() {
+      const container = document.getElementById('orders-history-container');
+      const localOrders = JSON.parse(localStorage.getItem('shami_orders') || '[]');
+
+      if (localOrders.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-stone-400 text-xs">لا توجد طلبات سابقة مسجلة على هذا الجهاز</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      localOrders.forEach(orderId => {
+        db.ref('orders/' + orderId).on('value', (snap) => {
+          const order = snap.val();
+          if (!order) return;
+
+          if (!isFirstStatusLoad) {
+            if (previousOrderStatuses[orderId] && previousOrderStatuses[orderId] !== order.status) {
+              triggerOrderStatusNotification(orderId, order.status);
+            }
+          }
+          previousOrderStatuses[orderId] = order.status;
+
+          let statusColor = "bg-amber-100 text-amber-800 border-amber-300";
+          if (order.status === 'قيد التحضير') statusColor = "bg-blue-100 text-blue-800 border-blue-300";
+          if (order.status === 'جاهز للتوصيل' || order.status === 'تم التوصيل') statusColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          if (order.status === 'ملغي') statusColor = "bg-red-100 text-red-800 border-red-300";
+
+          let card = document.getElementById(`order-card-${orderId}`);
+          if (!card) {
+            card = document.createElement('div');
+            card.id = `order-card-${orderId}`;
+            card.className = "bg-white p-4 rounded-2xl border border-stone-200 shadow-sm space-y-3";
+            container.prepend(card);
+          }
+
+          // تجهيز تفاصيل الأصناف بوضوح مع الكمية والملاحظات
+          const itemsDetailsHtml = order.items.map(i => `
+            <div class="flex justify-between items-start text-xs bg-stone-50 p-2 rounded-xl border border-stone-100">
+              <div>
+                <span class="font-bold text-stone-900">• ${i.name}</span>
+                <span class="text-amber-700 font-bold mr-1">(×${i.qty})</span>
+                ${i.notes ? `<p class="text-[11px] text-stone-500 mt-0.5">ملاحظة: ${i.notes}</p>` : ''}
+              </div>
+              <span class="font-black text-stone-700">${i.price * i.qty} ج.م</span>
+            </div>
+          `).join('');
+
+          const itemsSummaryStr = order.items.map(i => `${i.name} (${i.qty})`).join(', ');
+          const encodedItemsData = encodeURIComponent(JSON.stringify(order.items));
+
+          card.innerHTML = `
+            <div class="flex justify-between items-center border-b pb-2">
+              <span class="font-black text-stone-900 text-sm">طلب #${order.orderId}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusColor}">${order.status}</span>
+            </div>
+            
+            <div class="text-xs space-y-1 text-stone-600">
+              <p><strong>نوع الطلب:</strong> ${order.orderType === 'delivery' ? 'دليفري' : order.orderType === 'dinein' ? 'صالة' : 'سفري'}</p>
+              <p><strong>الإجمالي النهائي:</strong> <span class="text-amber-700 font-black">${order.total} ج.م</span></p>
+            </div>
+
+            <!-- تفاصيل الأصناف بوضوح مع ملاحظاتها -->
+            <div class="space-y-1.5 pt-1">
+              <p class="text-xs font-bold text-stone-700">الأصناف المطلوبة:</p>
+              <div class="space-y-1 max-h-36 overflow-y-auto">
+                ${itemsDetailsHtml}
+              </div>
+            </div>
+
+            <div class="pt-2 grid grid-cols-2 gap-2 border-t">
+              <button onclick="promptReorder('${encodedItemsData}')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 shadow-sm">
+                <i class="fa-solid fa-rotate-right text-xs"></i> إعادة نفس الطلب
+              </button>
+              <button onclick="sendOrderWhatsAppInquiry('${order.orderId}', '${order.total}', '${order.status}', '${itemsSummaryStr}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i> استفسار واتساب
+              </button>
+            </div>
+          `;
+        });
+      });
+      isFirstStatusLoad = false;
+    }
+  </script>
+</body>
+</html>
