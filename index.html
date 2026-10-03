@@ -188,7 +188,7 @@
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">اختر المنطقة *</label>
             <select id="cust-zone" onchange="updateModalPrices()" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600 bg-white font-medium text-stone-800">
-                         <option data-name=' بوالينو' value='15'> بوالينو </option>
+              <option data-name=' بوالينو' value='15'> بوالينو </option>
               <option data-name=' الاسكندراني' value='20'> الاسكندراني </option>
               <option data-name=' ايزيس' value='20'> ايزيس </option>
               <option data-name='محرم بك' value='20'>محرم بك</option>
@@ -299,11 +299,12 @@
     let previousOrderStatuses = {};
     let isFirstStatusLoad = true;
     let pendingReorderData = null;
+    let orderCooldownTimer = null; // متغير لحماية التكرار
 
     const restaurantWhatsAppNumber = "201122232845";
 
- const menuData = [
-      {
+    const menuData = [
+         {
         category: "عروض الركن الشامي",
         items: [
           { name: "عرض الطلبة ", price: 35, desc: "عرض الطلبة", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
@@ -559,7 +560,7 @@
         badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> مفتوح الآن`;
         closedBanner.classList.add('hidden');
         if (checkoutBtn) checkoutBtn.disabled = false;
-        if (submitOrderBtn) submitOrderBtn.disabled = false;
+        if (submitOrderBtn && !orderCooldownTimer) submitOrderBtn.disabled = false;
       } else {
         badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-900/80 text-red-300 border border-red-500/50 flex items-center gap-1";
         badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> مغلق حالياً`;
@@ -630,7 +631,7 @@
                     </div>
                   </div>
                 ` : `
-                  <button onclick="addToCart('${item.name}', ${item.price})" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2.5 rounded-xl transition shadow flex items-center justify-center gap-1.5">
+                  <button onclick="addToCart('${item.name}',${item.price})" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2.5 rounded-xl transition shadow flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus text-xs"></i> إضافة للسلة
                   </button>
                 `}
@@ -826,6 +827,9 @@
         return;
       }
 
+      const submitBtn = document.getElementById('submit-order-btn');
+      if (submitBtn.disabled) return; // حماية إضافية ضد الضغط أثناء فترة الانتظار
+
       const name = document.getElementById('cust-name').value.trim();
       const phone = document.getElementById('cust-phone').value.trim();
       const secondPhone = document.getElementById('cust-second-phone').value.trim();
@@ -877,10 +881,38 @@
           renderMenuItems(currentCategory);
           closeCheckoutModal();
           showTrackingView();
+
+          // تفعيل مؤقت الانتظار (10 ثواني) لتجنب التكرار
+          startOrderCooldown();
         } else {
           showToast("حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى", true);
         }
       });
+    }
+
+    // دالة تفعيل حظر الضغط المتكرر لمدة 10 ثواني
+    function startOrderCooldown() {
+      const submitBtn = document.getElementById('submit-order-btn');
+      if (!submitBtn) return;
+      
+      let timeLeft = 10;
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      submitBtn.innerText = `يرجى الانتظار (${timeLeft}ث) للطلب مرة أخرى...`;
+
+      clearInterval(orderCooldownTimer);
+      orderCooldownTimer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          submitBtn.innerText = `يرجى الانتظار (${timeLeft}ث) للطلب مرة أخرى...`;
+        } else {
+          clearInterval(orderCooldownTimer);
+          orderCooldownTimer = null;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          submitBtn.innerText = "تأكيد وإرسال الطلب الآن 🚀";
+        }
+      }, 1000);
     }
 
     function showTrackingView() {
@@ -918,7 +950,6 @@
     function executeReorder() {
       if (!pendingReorderData || !Array.isArray(pendingReorderData)) return;
       
-      // تفريغ السلة الحالية أو إدمان الأصناف إليها (هنا سنقوم بإضافتها للسلة)
       pendingReorderData.forEach(item => {
         addToCart(item.name, item.price, item.qty, item.notes || '');
       });
@@ -963,7 +994,15 @@
             container.prepend(card);
           }
 
-          // تجهيز تفاصيل الأصناف بوضوح مع الكمية والملاحظات
+          // استخراج وتنسيق وقت الطلب بوضوح (ساعات ودقائق)
+          let orderTimeString = "";
+          if (order.createdAt) {
+            const orderDateObj = new Date(order.createdAt);
+            if (!isNaN(orderDateObj.getTime())) {
+              orderTimeString = orderDateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            }
+          }
+
           const itemsDetailsHtml = order.items.map(i => `
             <div class="flex justify-between items-start text-xs bg-stone-50 p-2 rounded-xl border border-stone-100">
               <div>
@@ -975,39 +1014,65 @@
             </div>
           `).join('');
 
-          const itemsSummaryStr = order.items.map(i => `${i.name} (${i.qty})`).join(', ');
-          const encodedItemsData = encodeURIComponent(JSON.stringify(order.items));
+          const itemsSummaryStr = order.items.map(i => `${i.name} (×${i.qty})`).join(', ');
+          const encodedItemsJson = encodeURIComponent(JSON.stringify(order.items));
 
           card.innerHTML = `
-            <div class="flex justify-between items-center border-b pb-2">
-              <span class="font-black text-stone-900 text-sm">طلب #${order.orderId}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusColor}">${order.status}</span>
-            </div>
-            
-            <div class="text-xs space-y-1 text-stone-600">
-              <p><strong>نوع الطلب:</strong> ${order.orderType === 'delivery' ? 'دليفري' : order.orderType === 'dinein' ? 'صالة' : 'سفري'}</p>
-              <p><strong>الإجمالي النهائي:</strong> <span class="text-amber-700 font-black">${order.total} ج.م</span></p>
+            <div class="flex justify-between items-start border-b pb-2.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-black text-stone-900 text-sm">#${order.orderId}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}">${order.status}</span>
+                </div>
+                <div class="text-[11px] text-stone-400 mt-1 flex items-center gap-2">
+                  <span><i class="fa-regular fa-calendar ml-1"></i>${order.date || 'اليوم'}</span>
+                  ${orderTimeString ? `<span><i class="fa-regular fa-clock ml-1"></i>${orderTimeString}</span>` : ''}
+                </div>
+              </div>
+              <span class="text-xs font-bold bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-200">
+                ${order.orderType === 'delivery' ? 'دليفري' : (order.orderType === 'dinein' ? 'صالة' : 'سفري')}
+              </span>
             </div>
 
-            <!-- تفاصيل الأصناف بوضوح مع ملاحظاتها -->
-            <div class="space-y-1.5 pt-1">
-              <p class="text-xs font-bold text-stone-700">الأصناف المطلوبة:</p>
-              <div class="space-y-1 max-h-36 overflow-y-auto">
-                ${itemsDetailsHtml}
+            <div class="space-y-1.5 max-h-40 overflow-y-auto">
+              ${itemsDetailsHtml}
+            </div>
+
+            <div class="bg-stone-50 p-2.5 rounded-xl border border-stone-200 text-xs space-y-1">
+              <div class="flex justify-between text-stone-600">
+                <span>اسم العميل:</span>
+                <span class="font-bold text-stone-900">${order.customer ? order.customer.name : 'غير محدد'}</span>
+              </div>
+              ${order.orderType === 'delivery' ? `
+                <div class="flex justify-between text-stone-600">
+                  <span>العنوان:</span>
+                  <span class="font-bold text-stone-900">${order.address || ''}</span>
+                </div>
+              ` : ''}
+              ${order.tableNo ? `
+                <div class="flex justify-between text-stone-600">
+                  <span>رقم الطاولة:</span>
+                  <span class="font-bold text-stone-900">${order.tableNo}</span>
+                </div>
+              ` : ''}
+              <div class="flex justify-between text-stone-800 font-black border-t pt-1 mt-1">
+                <span>الإجمالي النهائي:</span>
+                <span class="text-amber-700 text-sm">${order.total} ج.م</span>
               </div>
             </div>
 
-            <div class="pt-2 grid grid-cols-2 gap-2 border-t">
-              <button onclick="promptReorder('${encodedItemsData}')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 shadow-sm">
-                <i class="fa-solid fa-rotate-right text-xs"></i> إعادة نفس الطلب
-              </button>
-              <button onclick="sendOrderWhatsAppInquiry('${order.orderId}', '${order.total}', '${order.status}', '${itemsSummaryStr}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 shadow-sm">
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="sendOrderWhatsAppInquiry('${order.orderId}', ${order.total}, '${order.status}', '${itemsSummaryStr}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i> استفسار واتساب
+              </button>
+              <button onclick="promptReorder('${encodedItemsJson}')" class="bg-stone-800 hover:bg-stone-900 text-amber-400 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm border border-amber-500/30">
+                <i class="fa-solid fa-rotate-right text-xs"></i> إعادة نفس الطلب
               </button>
             </div>
           `;
         });
       });
+
       isFirstStatusLoad = false;
     }
   </script>
