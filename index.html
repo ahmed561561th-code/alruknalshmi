@@ -11,7 +11,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -33,27 +32,25 @@
 </head>
 <body class="bg-stone-100 pb-32 text-stone-800 min-h-screen select-none" onclick="requestNotificationPermission()">
 
-  <!-- إشعار إضافة صنف أو تنبيه عام -->
   <div id="toast-notification" class="fixed top-20 left-1/2 -translate-x-1/2 bg-stone-900/95 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl z-50 flex items-center gap-2 transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 border border-amber-500/30">
     <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
     <span id="toast-message">تمت العملية بنجاح</span>
   </div>
 
-  <!-- بنر إشعار تغيير حالة الطلب اللحظي -->
+  <!-- بانر الرسائل المباشرة للعميل عند أي تحديث في الأوردر أو تعديل الأصناف -->
   <div id="status-change-banner" class="fixed top-3 left-3 right-3 max-w-md mx-auto bg-stone-900 text-white p-3.5 rounded-2xl shadow-2xl z-50 transition-all duration-500 translate-y-[-150%] opacity-0 border-2 border-amber-500 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg shrink-0 border border-amber-500/40">
         <i class="fa-solid fa-bell animate-bounce"></i>
       </div>
       <div>
-        <h4 class="text-xs font-bold text-amber-400" id="status-banner-title">تحديث حالة الطلب!</h4>
-        <p class="text-[11px] text-stone-200 mt-0.5" id="status-banner-msg">تغيرت حالة طلبك</p>
+        <h4 class="text-xs font-bold text-amber-400" id="status-banner-title">إشعار من مطعم الركن الشامي!</h4>
+        <p class="text-[11px] text-stone-200 mt-0.5 leading-relaxed" id="status-banner-msg">تحديث على طلبك</p>
       </div>
     </div>
     <button onclick="closeStatusBanner()" class="text-stone-400 hover:text-white text-sm px-2">✕</button>
   </div>
 
-  <!-- الهيدر الرئيسي -->
   <header class="bg-stone-900 text-white p-4 shadow-lg sticky top-0 z-20 border-b-2 border-amber-500 flex justify-between items-center">
     <div class="flex items-center gap-3">
       <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgYDIEqcDEQOb7vPbahxCYf7xbY8dt4Mg8RM3JZM7gWnEnghUm7HR6JPOy2wJSkl_pxcAsnPCbuqtDiPCxg-Kx9N0J5n3yckarG-1BtFKjT4O65lGwZ3a2wjQIUssdT9XpCrc0DNpYF3hpp2snQDdfFOUBK3olE7M7QNNAy8DHcXMKj3t8D6veY9Mj576oA/s320/WhatsApp%20Image%202025-06-11%20at%204.34.21%20PM.jpeg" 
@@ -73,15 +70,12 @@
     </button>
   </header>
 
-  <!-- تنبيه عند إغلاق المطعم -->
   <div id="closed-banner" class="hidden bg-red-600 text-white text-center py-2.5 px-4 text-xs font-bold shadow-inner sticky top-[73px] z-10 flex items-center justify-center gap-2">
     <i class="fa-solid fa-store-slash text-sm"></i>
     <span>عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة.</span>
   </div>
 
-  <!-- واجهة المنيو -->
   <div id="menu-view" class="p-4 max-w-md mx-auto">
-    <!-- شريط البحث -->
     <div class="mb-3 relative">
       <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="ابحث عن أكلة أو وجبة..." class="w-full bg-white border border-stone-200 rounded-xl py-2.5 px-9 text-xs focus:outline-none focus:border-amber-600 shadow-sm transition">
       <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-stone-400 text-xs"></i>
@@ -92,12 +86,10 @@
     <div id="menu-items-container" class="space-y-4"></div>
   </div>
 
-  <!-- زر واتساب الرئيسي -->
   <a href="https://wa.me/201122232845" target="_blank" rel="noopener noreferrer" class="fixed bottom-28 left-4 bg-emerald-600 hover:bg-emerald-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl z-30 text-2xl transition border-2 border-white">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
-  <!-- شريط السلة السفلي -->
   <div id="cart-bar" class="fixed bottom-[56px] left-0 right-0 bg-white border-t border-stone-200 p-3 shadow-2xl flex justify-between items-center max-w-md mx-auto z-20">
     <div>
       <span id="cart-count" class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-bold block w-fit mb-0.5">0 أطباق</span>
@@ -108,7 +100,6 @@
     </button>
   </div>
 
-  <!-- شريط التنقل السفلي -->
   <nav class="fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-amber-500/40 text-stone-400 max-w-md mx-auto z-30 flex justify-around items-center h-14 px-2 shadow-2xl">
     <button onclick="showMenuView()" id="nav-btn-menu" class="flex flex-col items-center justify-center w-full h-full text-amber-400 font-bold transition">
       <i class="fa-solid fa-utensils text-base mb-0.5"></i>
@@ -126,7 +117,6 @@
     </button>
   </nav>
 
-  <!-- مودال إتمام الطلب -->
   <div id="checkout-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto shadow-2xl">
       <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -188,20 +178,20 @@
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">اختر المنطقة *</label>
             <select id="cust-zone" onchange="updateModalPrices()" class="w-full border border-stone-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-amber-600 bg-white font-medium text-stone-800">
-              <option data-name=' بوالينو' value='15'> بوالينو </option>
-              <option data-name=' الاسكندراني' value='20'> الاسكندراني </option>
-              <option data-name=' ايزيس' value='20'> ايزيس </option>
-              <option data-name='محرم بك' value='20'>محرم بك</option>
-              <option data-name='امبروزو' value='20'>امبروزو</option>
-              <option data-name=' الحضرة القبلية' value='25'> الحضرة القبلية</option>
-              <option data-name=' الحضرة الجديدة' value='25'> الحضرة الجديدة</option>
-              <option data-name='غيط العنب' value='25'> غيط العنب</option>
-              <option data-name='كرموز' value='30'> كرموز</option>
-              <option data-name='سموحة' value='30'> سموحة</option>
-              <option data-name='بحري' value='35'> بحري</option>
-              <option data-name='الشاطبي' value='35'> الشاطبي</option>
-              <option data-name='محطة الرمل' value='30'> محطة الرمل</option>
-              <option data-name='المنشية' value='30'>المنشية</option>
+              <option data-name="بوالينو" value="15">بوالينو - 15 ج.م</option>
+              <option data-name="الاسكندراني" value="20">الاسكندراني - 20 ج.م</option>
+              <option data-name="ايزيس" value="20">ايزيس - 20 ج.م</option>
+              <option data-name="محرم بك" value="20">محرم بك - 20 ج.م</option>
+              <option data-name="امبروزو" value="20">امبروزو - 20 ج.م</option>
+              <option data-name="الحضرة القبلية" value="25">الحضرة القبلية - 25 ج.م</option>
+              <option data-name="الحضرة الجديدة" value="25">الحضرة الجديدة - 25 ج.م</option>
+              <option data-name="غيط العنب" value="25">غيط العنب - 25 ج.م</option>
+              <option data-name="كرموز" value="30">كرموز - 30 ج.م</option>
+              <option data-name="سموحة" value="30">سموحة - 30 ج.م</option>
+              <option data-name="بحري" value="35">بحري - 35 ج.م</option>
+              <option data-name="الشاطبي" value="35">الشاطبي - 35 ج.م</option>
+              <option data-name="محطة الرمل" value="30">محطة الرمل - 30 ج.م</option>
+              <option data-name="المنشية" value="30">المنشية - 30 ج.م</option>
             </select>
           </div>
           <div>
@@ -246,7 +236,6 @@
     </div>
   </div>
 
-  <!-- مودال تأكيد إعادة نفس الطلب -->
   <div id="reorder-confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
     <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl text-center space-y-4 animate-pulse-subtle">
       <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
@@ -263,7 +252,6 @@
     </div>
   </div>
 
-  <!-- واجهة تتبع الطلبات -->
   <div id="tracking-view" class="p-4 max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-lg font-black text-stone-900 flex items-center gap-2">
@@ -278,13 +266,7 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyC7b09veLZicac60Uuw0Sgb-cL3FtC4",
-      authDomain: "alrokn-alshami.firebaseapp.com",
-      projectId: "alrokn-alshami",
-      storageBucket: "alrokn-alshami.appspot.com",
-      messagingSenderId: "637299277948",
-      appId: "1:637299277948:web:b2d029a2e72b41b4b889f9",
-      measurementId: "G-38M27LBT11"
+      databaseURL: "https://alrukn-90cc9-default-rtdb.firebaseio.com/"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -296,171 +278,111 @@
     let isRestaurantOpen = true;
     let searchQuery = '';
     let phoneLookupTimeout = null;
-    let previousOrderStatuses = {};
-    let isFirstStatusLoad = true;
+    let previousOrderSnapshots = {};
+    let orderUpdateMessages = {};
     let pendingReorderData = null;
-    let orderCooldownTimer = null; // متغير لحماية التكرار
+    let orderCooldownTimer = null;
+    let dbCategories = {};
+    let dbItems = {};
+    let dbZones = {};
+    let dbShiftDate = '';
 
     const restaurantWhatsAppNumber = "201122232845";
+    const getLocalTodayStr = () => {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    const getIsoTodayStr = () => new Date().toISOString().split('T')[0];
 
-    const menuData = [
-         {
-        category: "عروض الركن الشامي",
-        items: [
-          { name: "عرض الطلبة ", price: 35, desc: "عرض الطلبة", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "عرض 3 شاورما وسط ", price: 135, desc: "عرض 3 شاورما وسط", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "عرض 3 شاورما لارج ", price: 165, desc: "عرض 3 شاورما لارج", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "عرض 3 شاورما اكس لارج", price: 195, desc: "عرض 3 شاورما اكس لارج", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "عرض 2 فتة شاورما وسط", price: 160, desc: "عرض 2 فتة شاورما وسط", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "عرض 2 فتة شاورما كبير ", price: 180, desc: "عرض 2 فتة شاورما كبير", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" }
-        ]
-      },
-      {
-        category: "الشاورما",
-        items: [
-          { name: "سندوتش شاورما وسط", price: 55, desc: "سندوتش شاورما وسط", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما كبير", price: 65, desc: "سندوتش شاورما كبير", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما جامبو", price: 75, desc: "سندوتش شاورما جامبو", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما مع بطاطس", price: 70, desc: "سندوتش شاورما مع بطاطس", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما مع موتزريلا ", price: 70, desc: "سندوتش شاورما مع موتزريلا", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما فرنساوي", price: 70, desc: "سندوتش شاورما فرنساوي", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "سندوتش شاورما كايزر", price: 55, desc: "سندوتش شاورما كايزر", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "وجبة شاورما عربي", price: 85, desc: "وجبة شاورما عربي", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "وجبة شاورما عربي دبل", price: 130, desc: "وجبة شاورما عربي دبل", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "وجبة شاورما فرط", price: 150, desc: "وجبة شاورما فرط", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "نص كيلو شاورما", price: 300, desc: "نص كيلو شاورما", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" },
-          { name: "كيلو شاورما", price: 600, desc: "كيلو شاورما", img: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300" }
-        ]
-      },
-      {
-        category: "الغربي",
-        items: [
-          { name: "سندوتش كرسبي سوري", price: 75, desc: "سندوتش كرسبي سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش كرسبي فرنساوي", price: 80, desc: "سندوتش كرسبي فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش زنجر سوري", price: 75, desc: "سندوتش زنجر سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش زنجر فرنساوي", price: 80, desc: "سندوتش زنجر فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش سكالوب سوري", price: 75, desc: "سندوتش سكالوب سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش سكالوب فرنساوي", price: 80, desc: "سندوتش سكالوب فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش فاهيتا سوري", price: 70, desc: "سندوتش فاهيتا سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش فاهيتا فرنساوي", price: 75, desc: "سندوتش فاهيتا فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش مكسيكي سوري", price: 70, desc: "سندوتش مكسيكي سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش مكسيكي فرنساوي", price: 75, desc: "سندوتش مكسيكي فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش كبدة فراخ سوري", price: 50, desc: "سندوتش كبدة فراخ سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "سندوتش كبدة فراخ فرنساوي", price: 55, desc: "سندوتش كبدة فراخ فرنساوي", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: " برجر تشيكن سوري", price: 45, desc: "سندوتش برجر تشيكن سوري", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: " برجر تشيكن كايزر", price: 50, desc: " برجر تشيكن كايزر", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: " برجر تشيكن سوري موتزريلا", price: 50, desc: "برجر تشيكن سوري موتزريلا", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" },
-          { name: "برجر تشيكن كايزر موتزريلا", price: 55, desc: "برجر تشيكن كايزر موتزريلا", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&auto=format&fit=crop" }
-        ]
-      },
-      {
-        category: "البطاطس",
-        items: [
-          { name: "سندوتش بطاطس سوري", price: 20, desc: "سندوتش بطاطس سوري", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس جامبو", price: 25, desc: "سندوتش بطاطس جامبو", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس فرنساوي", price: 25, desc: "سندوتش بطاطس فرنساوي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس موتزريلا سوري", price: 25, desc: "سندوتش بطاطس موتزريلا سوري", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس موتزريلا جامبو", price: 30, desc: "سندوتش بطاطس موتزريلا جامبو", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس موتزريلا فرنساوي", price: 35, desc: "سندوتش بطاطس موتزريلا فرنساوي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس سوري شيدر", price: 25, desc: "سندوتش بطاطس سوري شيدر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس جامبو شيدر", price: 30, desc: "سندوتش بطاطس جامبو شيدر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" },
-          { name: "سندوتش بطاطس شيدر فرنساوي", price: 35, desc: "سندوتش بطاطس شيدر فرنساوي  ", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0HJdiIU12LzwaluptzlgTgLJ_Xdzvu5ZyYx6nnSvJThiYYPPXLOGaTLSLEuQ56JUuBxhm4J04qrPllCdOdNWlNNQHqMB84uXu4B3BOC9Ck9GH-pLKhqUDu_SQ4tAX0ESZV1w9wlyoAaYeT4L2fwD8GQCOnUQjwRsbBkKVkGCSlca4j5pvY-4C9pY4AINw/s1600/376796-%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%B9%D9%85%D9%84-%D8%B3%D9%86%D8%AF%D9%88%D8%AA%D8%B4%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3.webp" }
-        ]
-      },
-      {
-        category: "الوجبات",
-        items: [
-          { name: "وجبة كريسبي 3 قطع ", price: 115, desc: "وجبة كريسبي 3 قطع", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة كريسبي 4 قطع ", price: 145, desc: "وجبة كريسبي 4 قطع ", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة زنجر 3 قطع ", price: 115, desc: "وجبة زنجر 3 قطع", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة زنجر 4 قطع", price: 145, desc: "وجبة زنجر 4 قطع", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة سكالوب 3 قطع ", price: 115, desc: "وجبة سكالوب 3 قطع ", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة سكالوب 4 قطع ", price: 145, desc: "وجبة سكالوب 4 قطع", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة فاهيتا", price: 125, desc: "وجبة فاهيتا", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" },
-          { name: "وجبة مكسيكي", price: 125, desc: "وجبة مكسيكي", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=200&q=80" }
-        ]
-      },
-      {
-        category: "الفتات",
-        items: [
-          { name: "فتة شاورما وسط", price: 95, desc: "فتة شاورما وسط", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة شاورما كبير", price: 105, desc: "فتة شاورما كبير", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة شاورما موتزريلا ", price: 115, desc: "فتة شاورما موتزريلا ", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة كريسبي وسط", price: 95, desc: "فتة كريسبي وسط", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة كريسبي كبير", price: 105, desc: "فتة كريسبي كبير", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة كريسبي موتزريلا", price: 115, desc: "فتة كريسبي موتزريلا", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة زنجر وسط", price: 95, desc: "فتة زنجر وسط", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة زنجر كبير", price: 105, desc: "فتة زنجر كبير", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة زنجر موتزريلا", price: 115, desc: "فتة زنجر موتزريلا", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة فاهيتا وسط", price: 95, desc: "فتة فاهيتا وسط", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة فاهيتا كبير", price: 105, desc: "فتة فاهيتا كبير", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة مكسيكي وسط", price: 95, desc: "فتة مكسيكي وسط", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" },
-          { name: "فتة مكسيكي كبير", price: 105, desc: "فتة مكسيكي كبير", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih-NC0nfpqJL9kT0OOWuKAjeU9nf0vQV2Wr-XAA3Donq0mzYCI6Nudw_rfBTQtfZgdahH7DjpTPOl3nwhKPKcBn9PFIJL-IOtsdViAKgdMjtIYZVv_eEqikGTYdYBNIkc8yurr2RtnUfO53ZYQVJA4uex-HiwebiD8VpvHgdXSPM4S0DsAPjFoOgI8DNY/s1600/%D9%81%D8%AA%D8%A9.webp" }
-        ]
-      },
-      {
-        category: "الماريا",
-        items: [
-          { name: "ماريا شاورما", price: 95, desc: "ماريا شاورما", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا شاورما موتزريلا", price: 105, desc: "ماريا شاورما موتزريلا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا كريسبي", price: 95, desc: "ماريا كريسبي", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا كريسبي موتزريلا", price: 105, desc: "ماريا كريسبي موتزريلا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا زنجر", price: 95, desc: "ماريا زنجر", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا زنجر موتزريلا", price: 105, desc: "ماريا زنجر موتزريلا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا فاهيتا", price: 95, desc: "ماريا فاهيتا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا فاهيتا موتزريلا", price: 105, desc: "ماريا فاهيتا موتزريلا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا مكسيكي", price: 95, desc: "ماريا مكسيكي", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" },
-          { name: "ماريا مكسيكي موتزريلا", price: 105, desc: "ماريا مكسيكي موتزريلا", img: "https://hero-food.com/public/uploads/all/C0LqK1S3jVaYHCMlWMDdoyKlbEi02QOb590fAoJH.jpg" }
-        ]
-      },
-      {
-        category: "الريزو",
-        items: [
-          { name: "ريزو باربكيو", price: 85, desc: "ريزو باربكيو", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUfsTXlhuIz30z2xaEva4znzUUnpjTaLL5BeROyyL6BBA9Dm2alvC_DDfPq2jhrLNnU3JevLEDLfOHYfnM-aAvvmtdO19FJ9mup51lfUOeJELwohFD7-MZwtYiLZkGG27X_DCWHU3yJ0HRDlGoD3EBcTSL-2J3OrfuLG8xNGdoF2Rt__8s1P_z6_WYAhc/s1600/%D8%B1%D9%8A%D8%B2%D9%88.jpg" },
-          { name: "ريزو شيدر", price: 85, desc: "ريزو شيدر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUfsTXlhuIz30z2xaEva4znzUUnpjTaLL5BeROyyL6BBA9Dm2alvC_DDfPq2jhrLNnU3JevLEDLfOHYfnM-aAvvmtdO19FJ9mup51lfUOeJELwohFD7-MZwtYiLZkGG27X_DCWHU3yJ0HRDlGoD3EBcTSL-2J3OrfuLG8xNGdoF2Rt__8s1P_z6_WYAhc/s1600/%D8%B1%D9%8A%D8%B2%D9%88.jpg" },
-          { name: "ريزو كوكتيل", price: 85, desc: "ريزو كوكتيل", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUfsTXlhuIz30z2xaEva4znzUUnpjTaLL5BeROyyL6BBA9Dm2alvC_DDfPq2jhrLNnU3JevLEDLfOHYfnM-aAvvmtdO19FJ9mup51lfUOeJELwohFD7-MZwtYiLZkGG27X_DCWHU3yJ0HRDlGoD3EBcTSL-2J3OrfuLG8xNGdoF2Rt__8s1P_z6_WYAhc/s1600/%D8%B1%D9%8A%D8%B2%D9%88.jpg" }
-        ]
-      },
-      {
-        category: "مقبلات ساخنة ",
-        items: [
-          { name: "ارز بسمتي", price: 35, desc: "أرز بسمتي فاخر مطبوخ بالبهارات الشامية", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPRRtMTEQgSN9nqFF1d3TmwW6Mt5v0M9XlUX14zrr3htUcMFnWcBRTf7nYIfAykcaTNM4FI588dVt_v2q2G7bnJgphNW3VBapWEDqo7016NLCHGm2mIcCqsK8K4mClsNQ1ULaOrSoiaP1MT_OPGUlHUmI4tH0UVDizqO8ZL0No8ON6Gmpj74UUuoShmaQ/s1600/%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3-%D9%85%D9%82%D9%84%D9%8A%D8%A9-French-Fries.jpg" },
-          { name: "باكيت بطاطس", price: 25, desc: "باكيت بطاطس مقرمشة ذهبية", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPRRtMTEQgSN9nqFF1d3TmwW6Mt5v0M9XlUX14zrr3htUcMFnWcBRTf7nYIfAykcaTNM4FI588dVt_v2q2G7bnJgphNW3VBapWEDqo7016NLCHGm2mIcCqsK8K4mClsNQ1ULaOrSoiaP1MT_OPGUlHUmI4tH0UVDizqO8ZL0No8ON6Gmpj74UUuoShmaQ/s1600/%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3-%D9%85%D9%82%D9%84%D9%8A%D8%A9-French-Fries.jpg" },
-          { name: "باكيت بطاطس سبايسي", price: 25, desc: "بطاطس مقرمشة مبهرة بالبهارات الحارة", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPRRtMTEQgSN9nqFF1d3TmwW6Mt5v0M9XlUX14zrr3htUcMFnWcBRTf7nYIfAykcaTNM4FI588dVt_v2q2G7bnJgphNW3VBapWEDqo7016NLCHGm2mIcCqsK8K4mClsNQ1ULaOrSoiaP1MT_OPGUlHUmI4tH0UVDizqO8ZL0No8ON6Gmpj74UUuoShmaQ/s1600/%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3-%D9%85%D9%82%D9%84%D9%8A%D8%A9-French-Fries.jpg" },
-          { name: "باكيت بطاطس موتزريلا", price: 30, desc: "بطاطس غنية بالجبنة الموتزريلا الذائبة", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPRRtMTEQgSN9nqFF1d3TmwW6Mt5v0M9XlUX14zrr3htUcMFnWcBRTf7nYIfAykcaTNM4FI588dVt_v2q2G7bnJgphNW3VBapWEDqo7016NLCHGm2mIcCqsK8K4mClsNQ1ULaOrSoiaP1MT_OPGUlHUmI4tH0UVDizqO8ZL0No8ON6Gmpj74UUuoShmaQ/s1600/%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3-%D9%85%D9%82%D9%84%D9%8A%D8%A9-French-Fries.jpg" },
-          { name: "باكيت بطاطس شيدر", price: 30, desc: "بطاطس محمرة مغطاة بصوص الشيدر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPRRtMTEQgSN9nqFF1d3TmwW6Mt5v0M9XlUX14zrr3htUcMFnWcBRTf7nYIfAykcaTNM4FI588dVt_v2q2G7bnJgphNW3VBapWEDqo7016NLCHGm2mIcCqsK8K4mClsNQ1ULaOrSoiaP1MT_OPGUlHUmI4tH0UVDizqO8ZL0No8ON6Gmpj74UUuoShmaQ/s1600/%D8%A8%D8%B7%D8%A7%D8%B7%D8%B3-%D9%85%D9%82%D9%84%D9%8A%D8%A9-French-Fries.jpg" }
-        ]
-      },
-      {
-        category: "مقبلات باردا",
-        items: [
-          { name: "تومية عادي", price: 15, desc: "تومية عادي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "تومية سبايسي", price: 15, desc: "تومية سبايسي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "تومية صيامي", price: 15, desc: "تومية صيامي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "صوص بربكيو", price: 15, desc: "صوص بربكيو", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "صوص شيدر", price: 25, desc: "صوص شيدر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "كلو سلو", price: 20, desc: "كلو سلو", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" },
-          { name: "مخلل", price: 5, desc: "مخلل", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpkcb1QIXgIIdxHt270O-odnWU88ltqLfDwJ4eFcY65TE0woPNgd2PU5r-G7njCU6kdos9vRam4gD1VWWSGx-OxPVpowC0U8yo7AKj7YgfKJ7wsbd0YvqLxHJ0Zkh21Nssd3B8PDk2iA9X-hJ52Z6mJbiUgQhPUO1hCQ_mu63PbXn8IsEd47GNUKKkec8/s1600/%D8%A8%D8%A7%D8%B1%D8%AF%D8%A9.jpg" }
-        ]
-      },
-      {
-        category: "العائلي",
-        items: [
-          { name: "كيلو كرسبي", price: 600, desc: "كيلو كرسبي", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEig5pLaETgmdqyVQ_t0YkmLawwtgPRSkONfO6NFyDMHaQkp1GmGcCGN4Ov3xAkV6JN9UcjQJyFAufJHdd8Xk3QwxxLUZS_6b_skYJCHAqlIqGuVdlOn3pm0khjLjmF834mMP6OhZiKgmxcs8bU_V9tT_xH4KshaFolgT1Plqgr5BeUJ67kygSSbilC0Pts/s1600/%D9%83%D8%B1%D8%B3%D8%A8%D9%8A.jpg" },
-          { name: "كيلو زنجر", price: 600, desc: "كيلو زنجر", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEig5pLaETgmdqyVQ_t0YkmLawwtgPRSkONfO6NFyDMHaQkp1GmGcCGN4Ov3xAkV6JN9UcjQJyFAufJHdd8Xk3QwxxLUZS_6b_skYJCHAqlIqGuVdlOn3pm0khjLjmF834mMP6OhZiKgmxcs8bU_V9tT_xH4KshaFolgT1Plqgr5BeUJ67kygSSbilC0Pts/s1600/%D9%83%D8%B1%D8%B3%D8%A8%D9%8A.jpg" },
-          { name: "كيلو سكالوب", price: 600, desc: "كيلو سكالوب", img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEig5pLaETgmdqyVQ_t0YkmLawwtgPRSkONfO6NFyDMHaQkp1GmGcCGN4Ov3xAkV6JN9UcjQJyFAufJHdd8Xk3QwxxLUZS_6b_skYJCHAqlIqGuVdlOn3pm0khjLjmF834mMP6OhZiKgmxcs8bU_V9tT_xH4KshaFolgT1Plqgr5BeUJ67kygSSbilC0Pts/s1600/%D9%83%D8%B1%D8%B3%D8%A8%D9%8A.jpg" }
-        ]
+    function isItemClosedNow(item) {
+      if (!item) return true;
+      if (item.active === false || item.availableToday === false || item.isStopped === true || item.isClosed === true) return true;
+      if (item.disabledDate) {
+        const localToday = getLocalTodayStr();
+        const isoToday = getIsoTodayStr();
+        if (item.disabledDate === localToday || item.disabledDate === isoToday || (dbShiftDate && item.disabledDate === dbShiftDate)) {
+          return true;
+        }
       }
-    ];
+      return false;
+    }
+
+    function buildVisibleMenuList() {
+      const catsArray = Object.entries(dbCategories || {})
+        .map(([id, cat]) => ({ id, ...cat }))
+        .filter(cat => cat && cat.name && !cat.hiddenOnMenu);
+
+      const itemsArray = Object.entries(dbItems || {})
+        .map(([id, item]) => ({ id, ...item }))
+        .filter(item => item && item.name && item.price !== undefined);
+
+      return catsArray
+        .map(cat => {
+          const catItems = itemsArray
+            .filter(item => item.categoryId === cat.id)
+            .map(item => ({
+              id: item.id,
+              name: item.name,
+              price: Number(item.price),
+              desc: item.desc || item.name,
+              img: item.img || "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300",
+              unavailableToday: isItemClosedNow(item)
+            }));
+
+          return {
+            id: cat.id,
+            category: cat.name,
+            items: catItems
+          };
+        });
+    }
 
     window.onload = function() {
       initStoreStatusListener();
+      initRealtimeMenuSync();
+      initRealtimeZonesSync();
       renderCategories();
       renderMenuItems(0);
       updateCartUI();
       loadUserSavedOrders();
       loadSavedCustomerDataLocally();
     };
+
+    function initRealtimeMenuSync() {
+      db.ref('meta/shiftDate').on('value', (snap) => {
+        dbShiftDate = snap.val() || '';
+        renderMenuItems(currentCategory);
+      });
+
+      db.ref('categories').on('value', (snap) => {
+        dbCategories = snap.val() || {};
+        const list = buildVisibleMenuList();
+        if (currentCategory >= list.length) currentCategory = 0;
+        renderCategories();
+        renderMenuItems(currentCategory);
+      });
+
+      db.ref('items').on('value', (snap) => {
+        dbItems = snap.val() || {};
+        renderCategories();
+        renderMenuItems(currentCategory);
+      });
+    }
+
+    function initRealtimeZonesSync() {
+      db.ref('zones').on('value', (snap) => {
+        dbZones = snap.val() || {};
+        const zoneEntries = Object.values(dbZones);
+        if (zoneEntries.length > 0) {
+          const sel = document.getElementById('cust-zone');
+          sel.innerHTML = zoneEntries.map(z => `<option data-name="${z.name}" value="${z.fee}">${z.name} - ${z.fee} ج.م</option>`).join('');
+          updateModalPrices();
+        }
+      });
+    }
 
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast-notification');
@@ -469,11 +391,7 @@
       if (!toast || !toastMsg) return;
       
       toastMsg.innerText = message;
-      if (isError) {
-        toastIcon.className = "fa-solid fa-circle-exclamation text-red-400 text-sm";
-      } else {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
-      }
+      toastIcon.className = isError ? "fa-solid fa-circle-exclamation text-red-400 text-sm" : "fa-solid fa-circle-check text-emerald-400 text-sm";
 
       toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
       toast.classList.add('opacity-100', 'translate-y-0');
@@ -493,35 +411,39 @@
         osc.type = 'sine';
         osc.frequency.setValueAtTime(587.33, ctx.currentTime);
         osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.frequency.setValueAtTime(1046.5, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      } catch (e) {
-        console.log("Audio deferred");
-      }
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) {}
     }
 
-    function triggerOrderStatusNotification(orderId, newStatus) {
+    function triggerOrderUpdateMessage(orderDisplayId, messageText, titleText = "تحديث مباشر على طلبك 🥙") {
       playNotificationSound();
       const banner = document.getElementById('status-change-banner');
+      const titleEl = document.getElementById('status-banner-title');
       const msg = document.getElementById('status-banner-msg');
+      const dot = document.getElementById('nav-tracking-dot');
+      if (dot) dot.classList.remove('hidden');
+
       if (banner && msg) {
-        msg.innerText = `الطلب (${orderId}) أصبحت حالته الآن: [ ${newStatus} ]`;
+        if (titleEl) titleEl.innerText = titleText;
+        msg.innerText = `طلب (${orderDisplayId}): ${messageText}`;
         banner.classList.remove('translate-y-[-150%]', 'opacity-0');
         banner.classList.add('translate-y-0', 'opacity-100');
         
         clearTimeout(window.statusBannerTimer);
         window.statusBannerTimer = setTimeout(() => {
           closeStatusBanner();
-        }, 6000);
+        }, 8000);
       }
 
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification("مطعم الركن الشامي 🥙", {
-          body: `تحديث الطلب #${orderId}: حالته الآن (${newStatus})`,
+          body: `طلب ${orderDisplayId}: ${messageText}`,
           icon: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgYDIEqcDEQOb7vPbahxCYf7xbY8dt4Mg8RM3JZM7gWnEnghUm7HR6JPOy2wJSkl_pxcAsnPCbuqtDiPCxg-Kx9N0J5n3yckarG-1BtFKjT4O65lGwZ3a2wjQIUssdT9XpCrc0DNpYF3hpp2snQDdfFOUBK3olE7M7QNNAy8DHcXMKj3t8D6veY9Mj576oA/s320/WhatsApp%20Image%202025-06-11%20at%204.34.21%20PM.jpeg"
         });
       }
@@ -571,8 +493,13 @@
     }
 
     function renderCategories() {
+      const visibleMenu = buildVisibleMenuList();
       const container = document.getElementById('category-tabs');
-      container.innerHTML = menuData.map((cat, index) => `
+      if (visibleMenu.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = visibleMenu.map((cat, index) => `
         <button onclick="switchCategory(${index})" class="category-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${index === currentCategory ? 'bg-amber-600 text-white shadow' : 'bg-white text-stone-600 border border-stone-200'}">
           ${cat.category}
         </button>
@@ -586,29 +513,60 @@
     }
 
     function renderMenuItems(catIndex) {
+      const visibleMenu = buildVisibleMenuList();
       const container = document.getElementById('menu-items-container');
       let itemsToDisplay = [];
 
+      if (visibleMenu.length === 0) {
+        container.innerHTML = `<div class="bg-white rounded-2xl border border-stone-200 p-8 text-center text-stone-400 text-xs">لم يتم إضافة أصناف في الكاشير بعد</div>`;
+        return;
+      }
+
       if (searchQuery) {
-        menuData.forEach(cat => {
+        visibleMenu.forEach(cat => {
           cat.items.forEach(item => {
             if (item.name.toLowerCase().includes(searchQuery) || item.desc.toLowerCase().includes(searchQuery)) {
               itemsToDisplay.push(item);
             }
           });
         });
-      } else {
-        itemsToDisplay = menuData[catIndex].items;
+      } else if (visibleMenu[catIndex]) {
+        itemsToDisplay = visibleMenu[catIndex].items;
       }
 
       if (itemsToDisplay.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-stone-400 text-xs">عذراً، لا توجد أصناف مطابقة للبحث</div>`;
+        container.innerHTML = `<div class="text-center py-10 text-stone-400 text-xs">عذراً، لا توجد أصناف مطابقة في هذا القسم</div>`;
         return;
       }
 
       container.innerHTML = itemsToDisplay.map(item => {
         const cartItem = cart.find(i => i.name === item.name);
         const qty = cartItem ? cartItem.qty : 0;
+
+        if (item.unavailableToday) {
+          return `
+            <div class="bg-stone-200/80 rounded-2xl border border-stone-300 shadow-sm overflow-hidden flex flex-col opacity-70 relative">
+              <div class="relative">
+                <img src="${item.img}" alt="${item.name}" class="w-full h-40 object-cover grayscale contrast-75">
+                <div class="absolute inset-0 bg-stone-900/45 flex items-center justify-center">
+                  <span class="bg-red-600 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-lg border border-white/40">الصنف غير متاح حالياً</span>
+                </div>
+              </div>
+              <div class="p-4 flex flex-col gap-2">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-bold text-stone-600 text-sm line-through">${item.name}</h3>
+                    <p class="text-stone-400 text-[11px] mt-0.5">${item.desc}</p>
+                  </div>
+                  <span class="font-black text-stone-500 text-sm shrink-0">${item.price} ج.م</span>
+                </div>
+                <button disabled class="mt-2 w-full bg-stone-300 text-stone-600 font-black text-xs py-2.5 rounded-xl cursor-not-allowed">
+                  الصنف غير متاح حالياً
+                </button>
+              </div>
+            </div>
+          `;
+        }
 
         return `
           <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col">
@@ -626,12 +584,12 @@
                   <div class="bg-amber-50 border border-amber-300 rounded-xl p-2 flex justify-between items-center">
                     <span class="text-xs font-bold text-stone-800">في السلة: ${qty}</span>
                     <div class="flex items-center gap-2">
-                      <button onclick="updateCartQtyByName('${item.name}', -1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">-</button>
-                      <button onclick="updateCartQtyByName('${item.name}', 1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">+</button>
+                      <button onclick="updateCartQtyByName('${item.name.replace(/'/g, "\\'")}', -1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">-</button>
+                      <button onclick="updateCartQtyByName('${item.name.replace(/'/g, "\\'")}', 1)" class="w-7 h-7 bg-amber-500 text-stone-950 font-black rounded-lg shadow flex items-center justify-center">+</button>
                     </div>
                   </div>
                 ` : `
-                  <button onclick="addToCart('${item.name}',${item.price})" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2.5 rounded-xl transition shadow flex items-center justify-center gap-1.5">
+                  <button onclick="addToCart('${item.name.replace(/'/g, "\\'")}',${item.price})" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2.5 rounded-xl transition shadow flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus text-xs"></i> إضافة للسلة
                   </button>
                 `}
@@ -665,6 +623,7 @@
       }
       updateCartUI();
       renderMenuItems(currentCategory);
+      showToast(`تمت إضافة ${name} للسلة`);
     }
 
     function updateCartQtyByName(name, delta) {
@@ -755,7 +714,7 @@
               <span class="font-bold text-stone-800">${item.price * item.qty} ج.م</span>
             </div>
           </div>
-          <input type="text" placeholder="ملاحظة على الصنف (مثال: بدون ثومية)" value="${item.notes || ''}" oninput="updateItemNote(${idx}, this.value)" class="w-full bg-stone-50 border border-stone-200 rounded p-1 text-[11px] text-stone-700">
+          <input type="text" placeholder="ملاحظة على الصنف (مثال: سبايسي، حار، بدون ثومية)" value="${item.notes || ''}" oninput="updateItemNote(${idx}, this.value)" class="w-full bg-stone-50 border border-stone-200 rounded p-1.5 text-[11px] text-stone-700">
         </div>
       `).join('');
 
@@ -791,6 +750,19 @@
       }
     }
 
+    function applyCustomerAutofill(data) {
+      if (!data) return;
+      if (data.name) document.getElementById('cust-name').value = data.name;
+      if (data.phone2 || data.secondPhone) document.getElementById('cust-second-phone').value = data.phone2 || data.secondPhone;
+      if (data.address) document.getElementById('cust-address').value = data.address;
+      if (data.landmark) document.getElementById('cust-landmark').value = data.landmark;
+      if (data.floor) document.getElementById('cust-floor').value = data.floor;
+      if (data.apt) document.getElementById('cust-apt').value = data.apt;
+      const badge = document.getElementById('phone-autofill-badge');
+      if (badge) badge.classList.remove('hidden');
+      showToast("تم جلب بياناتك المحفوظة تلقائياً ✨");
+    }
+
     function handlePhoneInput(val) {
       const cleanPhone = val.replace(/\D/g, '');
       const badge = document.getElementById('phone-autofill-badge');
@@ -803,18 +775,17 @@
         spinner.classList.remove('hidden');
         phoneLookupTimeout = setTimeout(() => {
           db.ref('customers/' + cleanPhone).once('value').then(snap => {
-            spinner.classList.add('hidden');
-            const data = snap.val();
-            if (data) {
-              if (data.name) document.getElementById('cust-name').value = data.name;
-              if (data.secondPhone) document.getElementById('cust-second-phone').value = data.secondPhone;
-              if (data.address) document.getElementById('cust-address').value = data.address;
-              if (data.landmark) document.getElementById('cust-landmark').value = data.landmark;
-              if (data.floor) document.getElementById('cust-floor').value = data.floor;
-              if (data.apt) document.getElementById('cust-apt').value = data.apt;
-              badge.classList.remove('hidden');
-              showToast("تم جلب بياناتك المحفوظة تلقائياً ✨");
+            if (snap.val()) {
+              spinner.classList.add('hidden');
+              applyCustomerAutofill(snap.val());
+              return;
             }
+            return db.ref('customers').once('value').then(allSnap => {
+              spinner.classList.add('hidden');
+              const allCusts = allSnap.val() || {};
+              const matched = Object.values(allCusts).find(c => c && (c.phone1 === cleanPhone || c.phone === cleanPhone || c.phone2 === cleanPhone));
+              if (matched) applyCustomerAutofill(matched);
+            });
           }).catch(() => spinner.classList.add('hidden'));
         }, 500);
       }
@@ -828,7 +799,7 @@
       }
 
       const submitBtn = document.getElementById('submit-order-btn');
-      if (submitBtn.disabled) return; // حماية إضافية ضد الضغط أثناء فترة الانتظار
+      if (submitBtn.disabled) return;
 
       const name = document.getElementById('cust-name').value.trim();
       const phone = document.getElementById('cust-phone').value.trim();
@@ -838,20 +809,26 @@
       const table = (orderType === 'dinein') ? document.getElementById('cust-table').value.trim() : '';
       const floor = document.getElementById('cust-floor').value.trim();
       const apt = document.getElementById('cust-apt').value.trim();
-      const deliveryFee = (orderType === 'delivery') ? parseInt(document.getElementById('cust-zone').value) || 15 : 0;
+      const zoneSelect = document.getElementById('cust-zone');
+      const zoneName = zoneSelect.options[zoneSelect.selectedIndex]?.getAttribute('data-name') || '';
+      const deliveryFee = (orderType === 'delivery') ? parseInt(zoneSelect.value) || 15 : 0;
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
       const total = subtotal + deliveryFee;
 
-      const orderId = "ORD-" + Math.floor(1000 + Math.random() * 9000);
       const createdAt = new Date().toISOString();
+      const pushedRef = db.ref('orders').push();
+      const orderId = pushedRef.key;
 
       const orderData = {
         orderId,
+        type: orderType === 'delivery' ? 'delivery' : 'takeaway',
+        paymentMethod: 'cash',
         orderType,
-        status: 'جديد',
+        source: 'online',
+        status: 'pending_online',
         createdAt,
-        date: createdAt.split('T')[0],
-        customer: { name, phone, secondPhone },
+        date: getLocalTodayStr(),
+        customer: { name, phone1: phone, phone2: secondPhone, zoneName, address, landmark, floor, apt },
         phone,
         secondPhone,
         address,
@@ -860,14 +837,15 @@
         floor,
         apt,
         items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, notes: i.notes || '' })),
+        subTotal: subtotal,
         subtotal,
         deliveryFee,
         total
       };
 
-      db.ref('orders/' + orderId).set(orderData, (err) => {
+      pushedRef.set(orderData, (err) => {
         if (!err) {
-          db.ref('customers/' + phone).set({ name, secondPhone, address, landmark, floor, apt });
+          db.ref('customers/' + phone).set({ name, phone1: phone, phone2: secondPhone, zoneName, address, landmark, floor, apt });
           localStorage.setItem('shami_customer_data', JSON.stringify({ phone, secondPhone, name, address, landmark, floor, apt }));
 
           let localOrders = JSON.parse(localStorage.getItem('shami_orders') || '[]');
@@ -875,14 +853,12 @@
           localOrders.unshift(orderId);
           localStorage.setItem('shami_orders', JSON.stringify(localOrders));
 
-          showToast(`تم إرسال طلبك بنجاح! رقم الطلب: #${orderId} 🚀`);
+          showToast("تم إرسال طلبك بنجاح! في انتظار تأكيد المطعم 🚀");
           cart = [];
           updateCartUI();
           renderMenuItems(currentCategory);
           closeCheckoutModal();
           showTrackingView();
-
-          // تفعيل مؤقت الانتظار (10 ثواني) لتجنب التكرار
           startOrderCooldown();
         } else {
           showToast("حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى", true);
@@ -890,7 +866,6 @@
       });
     }
 
-    // دالة تفعيل حظر الضغط المتكرر لمدة 10 ثواني
     function startOrderCooldown() {
       const submitBtn = document.getElementById('submit-order-btn');
       if (!submitBtn) return;
@@ -932,7 +907,6 @@
       window.open(`https://wa.me/${restaurantWhatsAppNumber}?text=${text}`, '_blank');
     }
 
-    // دوال إعادة الطلب المؤكدة
     function promptReorder(orderItemsJson) {
       try {
         pendingReorderData = JSON.parse(decodeURIComponent(orderItemsJson));
@@ -949,14 +923,44 @@
 
     function executeReorder() {
       if (!pendingReorderData || !Array.isArray(pendingReorderData)) return;
-      
-      pendingReorderData.forEach(item => {
-        addToCart(item.name, item.price, item.qty, item.notes || '');
-      });
-
+      pendingReorderData.forEach(item => addToCart(item.name, item.price, item.qty, item.notes || ''));
       closeReorderModal();
       showToast("تمت إضافة أصناف الطلب السابق إلى السلة بنجاح! 🛒");
       openCheckoutModal();
+    }
+
+    function getArabicOrderStatus(order) {
+      if (order.status === 'pending_online') return 'في انتظار تأكيد المطعم';
+      if (order.status === 'preparing') return 'تم قبول الطلب وجاري التحضير 👨‍🍳';
+      if (order.status === 'out_for_delivery') return `الأوردر طالع في الطريق إليك (${order.driverName || 'مندوب التوصيل'}) 🛵`;
+      if (order.status === 'completed') return 'تم التوصيل بنجاح ✅';
+      if (order.status === 'cancelled' || order.status === 'rejected') return 'ملغي ❌';
+      return order.status || 'جديد';
+    }
+
+    function getItemsSignature(items) {
+      return (items || []).map(i => `${i.name}:${i.qty}:${i.price}:${i.notes || ''}`).join('|');
+    }
+
+    function detectOrderChanges(prevSnap, currentOrder) {
+      const changes = [];
+      const newStatusText = getArabicOrderStatus(currentOrder);
+
+      if (prevSnap.statusText !== newStatusText) {
+        changes.push(`حالة الأوردر الآن: ${newStatusText}`);
+      }
+
+      if (prevSnap.itemsSig !== getItemsSignature(currentOrder.items)) {
+        changes.push(`تم تعديل أصناف أو ملاحظات الطلب (الإجمالي الجديد: ${currentOrder.total} ج.م)`);
+      } else if (Number(prevSnap.total) !== Number(currentOrder.total)) {
+        changes.push(`تم تعديل إجمالي الطلب ليصبح ${currentOrder.total} ج.م`);
+      }
+
+      if ((prevSnap.driverName || '') !== (currentOrder.driverName || '') && currentOrder.driverName) {
+        changes.push(`تم تعيين الطيار: ${currentOrder.driverName}`);
+      }
+
+      return changes;
     }
 
     function loadUserSavedOrders() {
@@ -970,21 +974,42 @@
 
       container.innerHTML = '';
       localOrders.forEach(orderId => {
+        db.ref('orders/' + orderId).off();
         db.ref('orders/' + orderId).on('value', (snap) => {
           const order = snap.val();
           if (!order) return;
 
-          if (!isFirstStatusLoad) {
-            if (previousOrderStatuses[orderId] && previousOrderStatuses[orderId] !== order.status) {
-              triggerOrderStatusNotification(orderId, order.status);
+          const readableStatus = getArabicOrderStatus(order);
+          const displayOrderNum = order.orderNumber ? `#${order.orderNumber}` : 'قيد الترقيم';
+          const currentSnap = {
+            statusText: readableStatus,
+            itemsSig: getItemsSignature(order.items),
+            total: order.total,
+            driverName: order.driverName || ''
+          };
+
+          if (previousOrderSnapshots[orderId]) {
+            const detectedChanges = detectOrderChanges(previousOrderSnapshots[orderId], order);
+            if (detectedChanges.length > 0) {
+              const fullAlertMsg = detectedChanges.join(' — ');
+              orderUpdateMessages[orderId] = {
+                text: fullAlertMsg,
+                time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+              };
+              triggerOrderUpdateMessage(displayOrderNum, fullAlertMsg, "رسالة تحديث من المطعم 🔔");
             }
+          } else if (order.lastCustomerNotification && !orderUpdateMessages[orderId]) {
+            orderUpdateMessages[orderId] = {
+              text: order.lastCustomerNotification,
+              time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+            };
           }
-          previousOrderStatuses[orderId] = order.status;
+          previousOrderSnapshots[orderId] = currentSnap;
 
           let statusColor = "bg-amber-100 text-amber-800 border-amber-300";
-          if (order.status === 'قيد التحضير') statusColor = "bg-blue-100 text-blue-800 border-blue-300";
-          if (order.status === 'جاهز للتوصيل' || order.status === 'تم التوصيل') statusColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
-          if (order.status === 'ملغي') statusColor = "bg-red-100 text-red-800 border-red-300";
+          if (order.status === 'preparing') statusColor = "bg-blue-100 text-blue-800 border-blue-300";
+          if (order.status === 'out_for_delivery' || order.status === 'completed') statusColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          if (order.status === 'cancelled' || order.status === 'rejected') statusColor = "bg-red-100 text-red-800 border-red-300";
 
           let card = document.getElementById(`order-card-${orderId}`);
           if (!card) {
@@ -994,7 +1019,6 @@
             container.prepend(card);
           }
 
-          // استخراج وتنسيق وقت الطلب بوضوح (ساعات ودقائق)
           let orderTimeString = "";
           if (order.createdAt) {
             const orderDateObj = new Date(order.createdAt);
@@ -1003,26 +1027,27 @@
             }
           }
 
-          const itemsDetailsHtml = order.items.map(i => `
+          const itemsDetailsHtml = (order.items || []).map(i => `
             <div class="flex justify-between items-start text-xs bg-stone-50 p-2 rounded-xl border border-stone-100">
               <div>
                 <span class="font-bold text-stone-900">• ${i.name}</span>
                 <span class="text-amber-700 font-bold mr-1">(×${i.qty})</span>
-                ${i.notes ? `<p class="text-[11px] text-stone-500 mt-0.5">ملاحظة: ${i.notes}</p>` : ''}
+                ${i.notes ? `<p class="text-[11px] text-amber-800 font-bold mt-0.5">ملاحظة: ${i.notes}</p>` : ''}
               </div>
               <span class="font-black text-stone-700">${i.price * i.qty} ج.م</span>
             </div>
           `).join('');
 
-          const itemsSummaryStr = order.items.map(i => `${i.name} (×${i.qty})`).join(', ');
-          const encodedItemsJson = encodeURIComponent(JSON.stringify(order.items));
+          const itemsSummaryStr = (order.items || []).map(i => `${i.name} (×${i.qty})`).join(', ');
+          const encodedItemsJson = encodeURIComponent(JSON.stringify(order.items || []));
+          const liveNotice = orderUpdateMessages[orderId];
 
           card.innerHTML = `
             <div class="flex justify-between items-start border-b pb-2.5">
               <div>
-                <div class="flex items-center gap-2">
-                  <span class="font-black text-stone-900 text-sm">#${order.orderId}</span>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}">${order.status}</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-black text-stone-900 text-sm">${displayOrderNum}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}">${readableStatus}</span>
                 </div>
                 <div class="text-[11px] text-stone-400 mt-1 flex items-center gap-2">
                   <span><i class="fa-regular fa-calendar ml-1"></i>${order.date || 'اليوم'}</span>
@@ -1033,6 +1058,16 @@
                 ${order.orderType === 'delivery' ? 'دليفري' : (order.orderType === 'dinein' ? 'صالة' : 'سفري')}
               </span>
             </div>
+
+            ${liveNotice ? `
+              <div class="bg-amber-50 border border-amber-400 text-amber-950 p-2.5 rounded-xl text-[11px] font-bold flex items-start gap-2">
+                <i class="fa-solid fa-bell text-amber-600 mt-0.5"></i>
+                <div>
+                  <span class="block text-amber-800 font-black">آخر إشعار من المطعم (${liveNotice.time}):</span>
+                  <span>${liveNotice.text}</span>
+                </div>
+              </div>
+            ` : ''}
 
             <div class="space-y-1.5 max-h-40 overflow-y-auto">
               ${itemsDetailsHtml}
@@ -1049,12 +1084,6 @@
                   <span class="font-bold text-stone-900">${order.address || ''}</span>
                 </div>
               ` : ''}
-              ${order.tableNo ? `
-                <div class="flex justify-between text-stone-600">
-                  <span>رقم الطاولة:</span>
-                  <span class="font-bold text-stone-900">${order.tableNo}</span>
-                </div>
-              ` : ''}
               <div class="flex justify-between text-stone-800 font-black border-t pt-1 mt-1">
                 <span>الإجمالي النهائي:</span>
                 <span class="text-amber-700 text-sm">${order.total} ج.م</span>
@@ -1062,7 +1091,7 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-1">
-              <button onclick="sendOrderWhatsAppInquiry('${order.orderId}', ${order.total}, '${order.status}', '${itemsSummaryStr}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+              <button onclick="sendOrderWhatsAppInquiry('${displayOrderNum}', ${order.total}, '${readableStatus}', '${itemsSummaryStr}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i> استفسار واتساب
               </button>
               <button onclick="promptReorder('${encodedItemsJson}')" class="bg-stone-800 hover:bg-stone-900 text-amber-400 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm border border-amber-500/30">
@@ -1072,8 +1101,6 @@
           `;
         });
       });
-
-      isFirstStatusLoad = false;
     }
   </script>
 </body>
